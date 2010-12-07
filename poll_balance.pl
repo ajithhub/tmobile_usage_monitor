@@ -31,9 +31,9 @@ $username and $password
 
 print YAML::Dump($username, $password);
 
-my $account = Business::Billing::TMobile::USA->new(debug =>0);
+my $account = Business::Billing::TMobile::USA->new(debug =>1);
 
-my $user = $account->login(user => $username, password => $password)
+my $user = $account->login(username => $username, password => $password)
     or die "Problem logging in";
 
 
@@ -62,12 +62,17 @@ unless (($user_id) = $user_query_sth->fetchrow_array()) {
         or die "Problem inserting";
 }
 
-printf "Go rowid %s", $user_id;
-
+printf "Go rowid %s\n", $user_id;
 
 my $prepay_info = $account->get_prepay_details();
 
 my $exp_time = Date::Parse::str2time($prepay_info->{expiration});
+
+for my $key (qw(minutes, messages, balance)) {
+    exists $prepay_info->{$key} and
+       defined $prepay_info->{$key}
+           or die "Missing data, can't update db: %s", $key;
+}
 
 $ins_usage_sth->execute(
     $user_id,
