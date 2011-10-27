@@ -44,7 +44,6 @@ $user_query_sth->execute($user->{user}, $user->{first_name})
     or die "Couldn't execute statement: ";
 
 my $user_id;
-$DB::single=2;
 unless (($user_id) = $user_query_sth->fetchrow_array()) {
 
     $ins_user_sth->execute(
@@ -68,10 +67,10 @@ my $prepay_info = $account->get_prepay_details();
 
 my $exp_time = Date::Parse::str2time($prepay_info->{expiration});
 
-for my $key (qw(minutes, messages, balance)) {
+for my $key (qw(minutes balance)) {
     exists $prepay_info->{$key} and
        defined $prepay_info->{$key}
-           or die "Missing data, can't update db: %s", $key;
+           or die sprintf("Missing data, can't update db: %s", $key);
 }
 
 $ins_usage_sth->execute(
